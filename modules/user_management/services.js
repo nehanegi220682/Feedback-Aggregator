@@ -61,7 +61,14 @@ const saveUser = async (serializedUser) => {
     try {
         let user = new User(serializedUser);
         await user.save();
-    } catch (err) { throw err }
+    } catch (err) {
+        if (err.message.includes('E11000'))
+            throw {
+                code: APP_ERROR_CODES.INFORMATIVE_ERROR,
+                message: 'Email is already registered'
+            }
+        throw err;
+    }
 }
 
 module.exports = {
