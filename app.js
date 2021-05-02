@@ -1,11 +1,17 @@
 `use strict`;
 
+require('./lib/database/mongo');
 const express = require('express');
 const app = express();
 const { APP_PORT, HTTP_STATUS_CODES } = require('./universal_constants');
 const { isAuthenticatedRequest } = require('./modules/authentication/services');
 
+
 app.listen(APP_PORT, () => console.log(`Server Running at http://localhost:${APP_PORT}`));
+
+app.use(express.json());
+
+app.use(express.urlencoded({ extended: true }));
 
 app.use('/protected', isAuthenticatedRequest);
 
