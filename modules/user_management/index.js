@@ -10,7 +10,7 @@ router_unprotected.post('/create_user', async (req, res) => {
     try {
         const user = req.body;
         await user_services.createUser(user);
-        return res.send('dummy User created');
+        return res.send('User created');
     } catch (err) {
         if (err.code == APP_ERROR_CODES.INFORMATIVE_ERROR)
             return res.status(HTTP_STATUS_CODES.INVALID_INPUT).send(err.message);
