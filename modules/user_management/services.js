@@ -1,11 +1,15 @@
 `use strict`;
-
+const { v4 } = require('uuid');
+const crypto = require('crypto');
+const User = require('../../lib/database/models/users');
 const { APP_ERROR_CODES } = require('../../universal_constants');
 
 
 const createUser = async (user) => {
     try {
         await _validateUser(user);
+        let _serializedUser = _serializeUser(user);
+        await saveUser(_serializedUser);
     } catch (err) { throw err }
 }
 
@@ -31,6 +35,14 @@ const _validateUser = async (user) => {
     }
 }
 
+const _serializeUser = (user) => {
+    try {
+        user.jwt_secret = v4();
+        user.password = crypto.pbkdf2Sync(user.password, user.jwt_secret, 10000, 64, 'sha512').toString('hex');
+        return user;
+    } catch (err) { throw err }
+}
+
 const _validateEmail = (email) => {
     const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     return re.test(String(email).toLowerCase());
@@ -43,6 +55,13 @@ const _validatePhoneNumber = (phone) => {
 const _validatePassword = (password) => {
     const strongRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/;
     return strongRegex.test(password);
+}
+
+const saveUser = async (serializedUser) => {
+    try {
+        let user = new User(serializedUser);
+        await user.save();
+    } catch (err) { throw err }
 }
 
 module.exports = {
