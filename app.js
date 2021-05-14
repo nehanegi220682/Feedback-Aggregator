@@ -13,14 +13,14 @@ app.use(express.json());
 
 app.use(express.urlencoded({ extended: true }));
 
+//Unprotected Routes
+app.get(['/', '/ping'], (req, res) => res.send('pong!'));
 app.use(['/user'], require('./modules/user_management/index').router_unprotected);
+app.use('/authentication', require('./modules/authentication/index').router_unprotected);
 
+//Protected Routes
 app.use('/protected', isAuthenticatedRequest);
-
 app.use(['/protected/user'], require('./modules/user_management/index').protected_router);
 
-app.use('/authentication', require('./modules/authentication/index'));
-
-app.get(['/', '/ping'], (req, res) => res.send('pong!'));
 
 

@@ -37,8 +37,8 @@ const _validateUser = async (user) => {
 
 const _serializeUser = (user) => {
     try {
-        user.jwt_secret = v4();
-        user.password = crypto.pbkdf2Sync(user.password, user.jwt_secret, 10000, 64, 'sha512').toString('hex');
+        user.salt = v4();
+        user.password = crypto.pbkdf2Sync(user.password, user.salt, 10000, 64, 'sha512').toString('hex');
         return user;
     } catch (err) { throw err }
 }
