@@ -10,5 +10,6 @@ module.exports = {
     },
     APP_ERROR_CODES: {
         INFORMATIVE_ERROR: 111
-    }
+    },
+    JET_SECRET: '23bhb34bc3d3cdk'
 }
