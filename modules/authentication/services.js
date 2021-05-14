@@ -3,12 +3,12 @@
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const User = require('../../lib/database/models/users');
-const { HTTP_STATUS_CODES, APP_ERROR_CODES, JET_SECRET } = require('../../universal_constants');
+const { HTTP_STATUS_CODES, APP_ERROR_CODES, SECRET } = require('../../universal_constants');
 
 const _isAuthenticated = async (req) => {
     try {
         let { user } = req.cookies;
-        let decode_user = jwt.verify(user, JET_SECRET);
+        let decode_user = jwt.verify(user, SECRET);
         req.user = decode_user;
         return true;
     } catch (err) { return false; }
@@ -42,7 +42,7 @@ const getToken = (user_data) => {
         let token = jwt.sign({
             name: user_data.name,
             email: user_data.email
-        }, JET_SECRET, { expiresIn: '1h' });
+        }, SECRET, { expiresIn: '1h' });
         return token;
     } catch (err) { throw err }
 }
