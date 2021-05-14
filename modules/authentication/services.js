@@ -5,15 +5,18 @@ const jwt = require('jsonwebtoken');
 const User = require('../../lib/database/models/users');
 const { HTTP_STATUS_CODES, APP_ERROR_CODES } = require('../../universal_constants');
 
-const _isAuthenticated = async () => {
+const _isAuthenticated = async (req) => {
     try {
-        return true;//allow all
-    } catch (err) { throw err }
+        let { user } = req.cookies;
+        let decode_user = jwt.verify(user, 'secret');
+        req.user = decode_user;
+        return true;
+    } catch (err) { return false; }
 }
 
 const isAuthenticatedRequest = async (req, res, next) => {
     try {
-        if (await _isAuthenticated()) return next();
+        if (await _isAuthenticated(req)) return next();
         else return res.status(HTTP_STATUS_CODES.UNAUTHORIZED).send('Unauthorized');
     } catch (err) {
         res.status(HTTP_STATUS_CODES.GENERIC_SERVER_ERROR).send('Something went wrong :(');

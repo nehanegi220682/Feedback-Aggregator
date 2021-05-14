@@ -3,6 +3,7 @@
 require('./lib/database/mongo');
 const express = require('express');
 const app = express();
+const cookieParser = require('cookie-parser')
 const { APP_PORT, HTTP_STATUS_CODES } = require('./universal_constants');
 const { isAuthenticatedRequest } = require('./modules/authentication/services');
 
@@ -10,7 +11,7 @@ const { isAuthenticatedRequest } = require('./modules/authentication/services');
 app.listen(APP_PORT, () => console.log(`Server Running at http://localhost:${APP_PORT}`));
 
 app.use(express.json());
-
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 //Unprotected Routes

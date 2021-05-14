@@ -19,7 +19,7 @@ router_unprotected.post('/create_user', async (req, res) => {
 });
 
 
-protected_router.post('/update', (req, res) => {
+protected_router.get('/test', (req, res) => {
     res.send('I am protected');
 });
 
