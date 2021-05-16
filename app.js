@@ -22,6 +22,6 @@ app.use('/authentication', require('./modules/authentication/index').router_unpr
 //Protected Routes
 app.use('/protected', isAuthenticatedRequest);
 app.use(['/protected/customer'], require('./modules/customer_management/index').protected_router);
-
+app.use(['/protected/campaign'], require('./modules/campaign_management/index').protected_router);
 
 

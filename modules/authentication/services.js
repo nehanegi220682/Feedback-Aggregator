@@ -41,7 +41,8 @@ const getToken = (customer_data) => {
     try {
         let token = jwt.sign({
             name: customer_data.name,
-            email: customer_data.email
+            email: customer_data.email,
+            id: customer_data.id
         }, SECRET, { expiresIn: '1h' });
         return token;
     } catch (err) { throw err }
