@@ -4,7 +4,7 @@ const express = require('express');
 const router_unprotected = express.Router();
 const protected_router = express.Router();
 const customer_services = require('./services');
-const { HTTP_STATUS_CODES, APP_ERROR_CODES } = require('../../universal_constants');
+const { handelHTTPEndpointError } = require('../../lib/error_handling')
 
 router_unprotected.post('/create_customer', async (req, res) => {
     try {
@@ -12,9 +12,7 @@ router_unprotected.post('/create_customer', async (req, res) => {
         await customer_services.createCustomer(customer);
         return res.send('Customer created');
     } catch (err) {
-        if (err.code == APP_ERROR_CODES.INFORMATIVE_ERROR)
-            return res.status(HTTP_STATUS_CODES.INVALID_INPUT).send(err.message);
-        return res.status(HTTP_STATUS_CODES.GENERIC_SERVER_ERROR).send('Something Went Wrong');
+        handelHTTPEndpointError(err, res);
     }
 });
 
