@@ -2,14 +2,14 @@
 
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
-const User = require('../../lib/database/models/users');
+const Customer = require('../../lib/database/models/customer');
 const { HTTP_STATUS_CODES, APP_ERROR_CODES, SECRET } = require('../../universal_constants');
 
 const _isAuthenticated = async (req) => {
     try {
-        let { user } = req.cookies;
-        let decode_user = jwt.verify(user, SECRET);
-        req.user = decode_user;
+        let { customer } = req.cookies;
+        let decode_customer = jwt.verify(customer, SECRET);
+        req.customer = decode_customer;
         return true;
     } catch (err) { return false; }
 }
@@ -28,7 +28,7 @@ const getAuthenticatedToken = async (data) => {
         let { email, password } = data;
         if (!email) throw { message: 'Email is a required field' };
         if (!password) throw { message: 'Password is a required field' }
-        let secret_data = await getUserInfoFromDB(email);
+        let secret_data = await getCustomerInfoFromDB(email);
         if (!validPassword(password, secret_data)) throw { message: 'Invalid email or Password' }
         return getToken(secret_data);
     } catch (err) {
@@ -37,27 +37,27 @@ const getAuthenticatedToken = async (data) => {
     }
 }
 
-const getToken = (user_data) => {
+const getToken = (customer_data) => {
     try {
         let token = jwt.sign({
-            name: user_data.name,
-            email: user_data.email
+            name: customer_data.name,
+            email: customer_data.email
         }, SECRET, { expiresIn: '1h' });
         return token;
     } catch (err) { throw err }
 }
 
-const getUserInfoFromDB = async (email) => {
+const getCustomerInfoFromDB = async (email) => {
     try {
-        let data = await User.findOne({ email: email });
+        let data = await Customer.findOne({ email: email });
         if (!data) throw { message: 'Invalid email or Password' }
         return data;
     } catch (err) { throw err }
 }
 
-const validPassword = (user_password, secret_data) => {
+const validPassword = (customer_password, secret_data) => {
     try {
-        hashed_password = crypto.pbkdf2Sync(user_password, secret_data.salt, 10000, 64, 'sha512').toString('hex');
+        hashed_password = crypto.pbkdf2Sync(customer_password, secret_data.salt, 10000, 64, 'sha512').toString('hex');
         if (hashed_password == secret_data.password) return true;
         return false;
     } catch (err) { throw err }

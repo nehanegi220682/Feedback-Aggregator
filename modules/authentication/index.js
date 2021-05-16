@@ -8,7 +8,7 @@ const { HTTP_STATUS_CODES, APP_ERROR_CODES } = require('../../universal_constant
 router_unprotected.post('/authorize', async (req, res) => {
     try {
         let token = await auth_services.getAuthenticatedToken(req.body);
-        res.cookie('user', token, { httpOnly: true });
+        res.cookie('customer', token, { httpOnly: true });
         return res.send('Authenticated');
     } catch (err) {
         if (err.code == APP_ERROR_CODES.INFORMATIVE_ERROR)
