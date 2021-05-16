@@ -29,6 +29,17 @@ protected_router.post('/change_status', async (req, res) => {
     }
 });
 
+protected_router.get('/list_all', async (req, res) => {
+    try {
+        let all_campaign = await campaign_services.getAllCampaign(req.customer.id);
+        return res.json(all_campaign);
+    } catch (err) {
+        if (err.code == APP_ERROR_CODES.INFORMATIVE_ERROR)
+            return res.status(HTTP_STATUS_CODES.INVALID_INPUT).send(err.message);
+        return res.status(HTTP_STATUS_CODES.GENERIC_SERVER_ERROR).send('Something Went Wrong');
+    }
+});
+
 module.exports = {
     protected_router
 };

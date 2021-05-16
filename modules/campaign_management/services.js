@@ -31,6 +31,17 @@ const toggleCampaignStatus = async (new_campaign_status, customer) => {
     }
 }
 
+const getAllCampaign = async (customer_id) => {
+    try {
+        let all_campaigns = await Campaign.find({ customer_id: customer_id });
+        if (!all_campaigns) all_campaigns = [];
+        all_campaigns = all_campaigns.map(campaign => {
+            return campaign.toJSON();
+        });
+        return all_campaigns;
+    } catch (err) { throw err }
+}
+
 const _validateToggleInput = (new_campaign_status) => {
     try {
         let { campaign_id, status } = new_campaign_status;
@@ -107,7 +118,11 @@ const _updateCampaignStatus = async (status_to_update, campaign_id) => {
     } catch (err) { throw err }
 }
 
+
+
+
 module.exports = {
     createCampaign,
+    getAllCampaign,
     toggleCampaignStatus
 }
