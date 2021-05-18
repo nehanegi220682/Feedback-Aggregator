@@ -13,6 +13,17 @@ const createCustomer = async (customer) => {
     } catch (err) { throw err }
 }
 
+const getCustomerDetails = async (customer_id) => {
+    try {
+        let customer = await Customer.findOne({ _id: customer_id });
+        if (!customer) throw { message: 'Customers not found' };
+        customer = customer.toJSON();
+        delete customer.password;
+        delete customer.salt;
+        return customer;
+    } catch (err) { throw err }
+}
+
 const _validateCustomer = async (customer) => {
     try {
         if (!(customer && Object.keys(customer).length))
@@ -72,5 +83,6 @@ const saveCustomer = async (serializedCustomer) => {
 }
 
 module.exports = {
-    createCustomer
+    createCustomer,
+    getCustomerDetails
 }

@@ -9,9 +9,9 @@ const createCampaign = async (campaign, customer) => {
     try {
         await _validateCampaign(campaign);
         let current_usage = await _checkUsageLimit(customer.id);
-        campaign = _serializeCustomer(campaign, customer);
+        campaign = _serializeCampaign(campaign, customer);
         await _saveCampaign(campaign);
-        await _updateUsageCount(current_usage, customer.id);
+        await _updateUsageCount(current_usage, customer.id, 1);
     } catch (err) {
         if (err.message) err.code = APP_ERROR_CODES.INFORMATIVE_ERROR;
         throw err;
@@ -47,6 +47,8 @@ const deleteCampaign = async (campaign_id, customer_id) => {
         if (!campaign_id) throw { message: 'campaign_id is required in body' };
         await _isAuthorizedToEditCampaign(campaign_id, customer_id);
         await _deleteCampaign(campaign_id);
+        let current_usage = await _checkUsageLimit(customer_id);
+        await _updateUsageCount(current_usage, customer_id, -1);
     } catch (err) {
         if (err.message) err.code = APP_ERROR_CODES.INFORMATIVE_ERROR;
         throw err
@@ -75,13 +77,15 @@ const _validateCampaign = async (campaign) => {
             throw { message: 'campaign is required in body' };
         if (!(campaign.name && campaign.name.length))
             throw { message: 'Campaign Name is a required field' };
+        if (!(campaign.product_id && campaign.name.length))
+            throw { message: 'Product_id is a required field' };
     } catch (err) {
         if (err.message) err.code = APP_ERROR_CODES.INFORMATIVE_ERROR;
         throw err;
     }
 }
 
-const _serializeCustomer = (campaign, customer) => {
+const _serializeCampaign = (campaign, customer) => {
     try {
         campaign.customer_id = customer.id;
         return campaign;
@@ -105,9 +109,9 @@ const _checkUsageLimit = async (customer_id) => {
     } catch (err) { throw err }
 }
 
-const _updateUsageCount = async (current_usage, customer_id) => {
+const _updateUsageCount = async (current_usage, customer_id, to_update) => {
     try {
-        current_usage++;
+        current_usage = current_usage + to_update;
         let res = await Customer.findOneAndUpdate({ _id: customer_id }, { campaign_limit_used: current_usage });
         if (!res) throw { message: 'Customer not found' };
     } catch (err) { throw err }
@@ -132,8 +136,8 @@ const _updateCampaignStatus = async (status_to_update, campaign_id) => {
 const _deleteCampaign = async (campaign_id) => {
     try {
         let response = await Campaign.deleteOne({ _id: campaign_id });
-        if (response && response.deletedCount) return;
-        throw { message: 'Unable to delete this product' };
+        if (!(response && response.deletedCount)) return;
+        throw { message: 'Unable to delete this campaign' };
     } catch (err) { throw err }
 }
 
