@@ -6,7 +6,7 @@ const { APP_ERROR_CODES } = require('../../universal_constants');
 const createProduct = async (product, customer) => {
     try {
         await _validateProduct(product);
-        await _doesProductExists(product.name);
+        await _doesProductExists(product.name,customer.id);
         product = _serializeProduct(product, customer);
         await _saveProduct(product);
     } catch (err) {
@@ -40,9 +40,9 @@ const deleteProduct = async (product_id, customer_id) => {
     }
 }
 
-const _doesProductExists = async (product_name) => {
+const _doesProductExists = async (product_name, customer_id) => {
     try {
-        let product = await Product.findOne({ name: product_name });
+        let product = await Product.findOne({ name: product_name, customer_id: customer_id });
         if (product) throw { message: 'Product already Exists' };
     } catch (err) { throw err }
 }
