@@ -42,6 +42,17 @@ const getAllCampaign = async (customer_id) => {
     } catch (err) { throw err }
 }
 
+const deleteCampaign = async (campaign_id, customer_id) => {
+    try {
+        if (!campaign_id) throw { message: 'campaign_id is required in body' };
+        await _isAuthorizedToEditCampaign(campaign_id, customer_id);
+        await _deleteCampaign(campaign_id);
+    } catch (err) {
+        if (err.message) err.code = APP_ERROR_CODES.INFORMATIVE_ERROR;
+        throw err
+    }
+}
+
 const _validateToggleInput = (new_campaign_status) => {
     try {
         let { campaign_id, status } = new_campaign_status;
@@ -107,7 +118,7 @@ const _isAuthorizedToEditCampaign = async (campaign_id, customer_id) => {
         let campaign = await Campaign.findById({ _id: campaign_id });
         if (!campaign) throw { message: 'campaign not available' };
         if (campaign.customer_id.id.toString('hex') == customer_id) return true;
-        throw { message: 'Unauthorized to toggle this campaign' };
+        throw { message: 'Unauthorized to make changes to this campaign' };
     } catch (err) { throw err }
 }
 
@@ -118,11 +129,17 @@ const _updateCampaignStatus = async (status_to_update, campaign_id) => {
     } catch (err) { throw err }
 }
 
-
-
+const _deleteCampaign = async (campaign_id) => {
+    try {
+        let response = await Campaign.deleteOne({ _id: campaign_id });
+        if (response && response.deletedCount) return;
+        throw { message: 'Unable to delete this product' };
+    } catch (err) { throw err }
+}
 
 module.exports = {
     createCampaign,
     getAllCampaign,
+    deleteCampaign,
     toggleCampaignStatus
 }

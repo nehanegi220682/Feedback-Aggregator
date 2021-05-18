@@ -34,6 +34,16 @@ protected_router.get('/list_all', async (req, res) => {
     }
 });
 
+
+protected_router.delete('/:campaign_id', async (req, res) => {
+    try {
+        await campaign_services.deleteCampaign(req.params.campaign_id, req.customer.id);
+        return res.send('Campaign Deleted');
+    } catch (err) {
+        handelHTTPEndpointError(err, res);
+    }
+});
+
 module.exports = {
     protected_router
 };
