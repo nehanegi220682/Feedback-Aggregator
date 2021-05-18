@@ -9,6 +9,7 @@ const createCampaign = async (campaign, customer) => {
     try {
         await _validateCampaign(campaign);
         let current_usage = await _checkUsageLimit(customer.id);
+        await _doesCampaignExists(campaign.name, customer.id);
         campaign = _serializeCampaign(campaign, customer);
         await _saveCampaign(campaign);
         await _updateUsageCount(current_usage, customer.id, 1);
@@ -136,8 +137,15 @@ const _updateCampaignStatus = async (status_to_update, campaign_id) => {
 const _deleteCampaign = async (campaign_id) => {
     try {
         let response = await Campaign.deleteOne({ _id: campaign_id });
-        if (!(response && response.deletedCount)) return;
+        if (response && response.deletedCount) return;
         throw { message: 'Unable to delete this campaign' };
+    } catch (err) { throw err }
+}
+
+const _doesCampaignExists = async (campaign_name, customer_id) => {
+    try {
+        let campaign = await Campaign.findOne({ name: campaign_name, customer_id: customer_id });
+        if (campaign) throw { message: 'campaign already Exists' };
     } catch (err) { throw err }
 }
 
