@@ -44,6 +44,36 @@ protected_router.delete('/:campaign_id', async (req, res) => {
     }
 });
 
+protected_router.post('/questions/add_questions', async (req, res) => {
+    try {
+        const to_add = req.body;
+        await campaign_services.addQuestions(to_add, req.customer);
+        return res.send(`${to_add.questions.length} Questions added`);
+    } catch (err) {
+        handelHTTPEndpointError(err, res);
+    }
+});
+
+protected_router.get('/question/list_all_questions/:campaign_id', async (req, res) => {
+    try {
+        const { campaign_id } = req.params;
+        let questions = await campaign_services.getAllQuestions(campaign_id);
+        return res.json(questions);
+    } catch (err) {
+        handelHTTPEndpointError(err, res);
+    }
+});
+
+protected_router.delete('/question/:question_id', async (req, res) => {
+    try {
+        const { question_id } = req.params;
+        let questions = await campaign_services.deleteQuestion(question_id,req.customer.id);
+        return res.send('question deleted');
+    } catch (err) {
+        handelHTTPEndpointError(err, res);
+    }
+});
+
 module.exports = {
     protected_router
 };
