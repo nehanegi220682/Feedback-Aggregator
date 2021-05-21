@@ -3,7 +3,7 @@
 const express = require('express');
 const protected_router = express.Router();
 const product_services = require('./services');
-const { handelHTTPEndpointError } = require('../../lib/error_handling')
+const { handelHTTPEndpointError } = require('../../lib/error_handling');
 
 protected_router.post('/create_product', async (req, res) => {
     try {

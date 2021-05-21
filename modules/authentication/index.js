@@ -3,7 +3,7 @@
 const express = require('express');
 const router_unprotected = express.Router();
 const auth_services = require('./services');
-const { handelHTTPEndpointError } = require('../../lib/error_handling')
+const { handelHTTPEndpointError } = require('../../lib/error_handling');
 
 router_unprotected.post('/authorize', async (req, res) => {
     try {

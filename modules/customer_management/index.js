@@ -4,7 +4,7 @@ const express = require('express');
 const router_unprotected = express.Router();
 const protected_router = express.Router();
 const customer_services = require('./services');
-const { handelHTTPEndpointError } = require('../../lib/error_handling')
+const { handelHTTPEndpointError } = require('../../lib/error_handling');
 
 router_unprotected.post('/create_customer', async (req, res) => {
     try {
