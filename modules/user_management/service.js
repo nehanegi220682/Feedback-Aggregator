@@ -6,6 +6,8 @@ const User = require('../../lib/database/models/user');
 const Product = require('../../lib/database/models/product');
 const Campaign = require('../../lib/database/models/campaign');
 const { APP_ERROR_CODES } = require('../../universal_constants');
+const email_template = require('../../email_templates/reachout_email');
+
 
 
 
@@ -64,28 +66,26 @@ const _getProductDetail = async (product_id) => {
 
 const _getMailContent = (customer_name, product_name) => {
     try {
-        let email_body = `
-        Hi $$NAME$$,
-        Hope you are doing, ${customer_name} want's to hear from you 
-        regarding ${product_name} and your experience it.
-        Your feedback is incredibly valuable.
-        Please take 2 min time to fill this feedback form by clicking hear $$link$$.
-        `
+        let email_body = email_template;
+        email_body = email_body.replace('$$customer_name$$', customer_name);
+        email_body = email_body.replace('$$product_name$$', product_name)
         return email_body;
     } catch (err) { throw err }
 }
 
 const _sendMailsToAllPeople = async (user_list, email_content, customer_id, campaign_id) => {
     try {
-        for (let i = 0; user_list.length; i++) {
+        for (let i = 0; i < user_list.length; i++) {
             let user = user_list[i];
             if (user.email) {
                 try {
+                    let temp_email_content = email_content;
                     let user_id = await _addUser(user.email, user.name, customer_id, campaign_id);
                     let feedback_form_url = _getFeedbackFormURL(customer_id, campaign_id, user_id);
-                    email_content = user.name ? email_content.replace('$$NAME$$', user.name) : email_content.replace('$$NAME$$', '');
-                    email_content = email_content.replace('$$link$$', feedback_form_url);
-                    await sendEmail('We value your Feedback', email_content, user.email);
+                    temp_email_content = (user.name && user.name.length) ? temp_email_content.replace('$$name$$', user.name) : temp_email_content.replace('$$name$$', '');
+                    temp_email_content = temp_email_content.replace('$$link$$', feedback_form_url);
+                    console.log('email content')
+                    await sendEmail('We value your Feedback', temp_email_content, user.email);
                 } catch (err) {
                     console.log(`Error sending Email to ${user.email} failed because of Error: ${err}`);
                 }
@@ -111,7 +111,7 @@ const _addUser = async (email, name = 'No Name', customer_id, campaign_id) => {
 }
 
 const _getFeedbackFormURL = (customer_id, campaign_id, user_id) => {
-    return `${process.env.FE_URL}/feedback?customer_id=${customer_id}&campaign_id=${campaign_id}&user_id=${user_id}`;
+    return `http://${process.env.FE_URL}/feedback?customer_id=${customer_id}&campaign_id=${campaign_id}&user_id=${user_id}`;
 }
 
 module.exports = {
