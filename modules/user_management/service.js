@@ -11,7 +11,7 @@ const email_template = require('../../email_templates/reachout_email');
 
 
 
-const uploadUsers = async (file, customer, campaign_id) => {
+const triggerBulkEmails = async (file, customer, campaign_id) => {
     try {
         _validateBulkSendRequest(file, campaign_id);
         let user_list = await csv().fromFile(file.path);
@@ -40,6 +40,7 @@ const _validateBulkSendRequest = (file, campaign_id) => {
 const _compileMailContent = async (customer, campaign_id) => {
     try {
         let campaign_details = await _getCampaignDetail(campaign_id);
+        if (campaign_details.campaign_status != 'ACTIVE') throw { message: 'Campaign not yet ready to publish' };
         let product_details = await _getProductDetail(campaign_details.product_id);
         let mail_content = _getMailContent(customer.name, product_details.name);
         return mail_content;
@@ -115,6 +116,6 @@ const _getFeedbackFormURL = (customer_id, campaign_id, user_id) => {
 }
 
 module.exports = {
-    uploadUsers
+    triggerBulkEmails
 }
 
