@@ -15,7 +15,6 @@ const uploadUsers = async (file, customer, campaign_id) => {
         if (!user_list.length) throw { message: 'CSV should at least have 1 email' };
         let email_content = await _compileMailContent(customer, campaign_id);
         _sendMailsToAllPeople(user_list, email_content);
-        console.log(user_list);
     } catch (err) {
         if (err.message) err.code = APP_ERROR_CODES.INFORMATIVE_ERROR;
         throw err;
