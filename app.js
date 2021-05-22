@@ -1,5 +1,7 @@
 `use strict`;
 
+require('dotenv').config();
+const cors = require('cors');
 require('./lib/database/mongo');
 const express = require('express');
 const app = express();
@@ -10,6 +12,7 @@ const { isAuthenticatedRequest } = require('./modules/authentication/services');
 
 app.listen(APP_PORT, () => console.log(`Server Running at http://localhost:${APP_PORT}`));
 
+app.use(cors());
 app.use(express.json());
 app.use(cookieParser(SECRET));
 app.use(express.urlencoded({ extended: true }));

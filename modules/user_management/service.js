@@ -82,7 +82,9 @@ const _sendMailsToAllPeople = async (user_list, email_content, customer_id, camp
             if (user.email) {
                 try {
                     let user_id = await _addUser(user.email, user.name, customer_id, campaign_id);
+                    let feedback_form_url = _getFeedbackFormURL(customer_id, campaign_id, user_id);
                     email_content = user.name ? email_content.replace('$$NAME$$', user.name) : email_content.replace('$$NAME$$', '');
+                    email_content = email_content.replace('$$link$$', feedback_form_url);
                     await sendEmail('We value your Feedback', email_content, user.email);
                 } catch (err) {
                     console.log(`Error sending Email to ${user.email} failed because of Error: ${err}`);
@@ -106,6 +108,10 @@ const _addUser = async (email, name = 'No Name', customer_id, campaign_id) => {
         await new_user.save();
         return new_user.id;
     } catch (err) { throw err }
+}
+
+const _getFeedbackFormURL = (customer_id, campaign_id, user_id) => {
+    return `${process.env.FE_URL}/feedback?customer_id=${customer_id}&campaign_id=${campaign_id}&user_id=${user_id}`;
 }
 
 module.exports = {
