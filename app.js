@@ -21,6 +21,7 @@ app.use(express.urlencoded({ extended: true }));
 app.get(['/', '/ping'], (req, res) => res.send('pong!'));
 app.use(['/customer'], require('./modules/customer_management/index').router_unprotected);
 app.use('/authentication', require('./modules/authentication/index').router_unprotected);
+app.use('/feedback', require('./modules/feedback_management/index').router_unprotected);
 
 //Protected Routes
 app.use('/protected', isAuthenticatedRequest);
