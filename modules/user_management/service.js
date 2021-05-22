@@ -1,7 +1,11 @@
 `use strict`;
 
 const csv = require('csvtojson');
+const { sendEmail } = require('../../lib/email');
+const Product = require('../../lib/database/models/product');
+const Campaign = require('../../lib/database/models/campaign');
 const { APP_ERROR_CODES } = require('../../universal_constants');
+
 
 
 const uploadUsers = async (file, customer, campaign_id) => {
@@ -9,7 +13,7 @@ const uploadUsers = async (file, customer, campaign_id) => {
         _validateBulkSendRequest(file, campaign_id);
         let user_list = await csv().fromFile(file.path);
         if (!user_list.length) throw { message: 'CSV should at least have 1 email' };
-        let email_content = await _compileMailContent(campaign_id);
+        let email_content = await _compileMailContent(customer, campaign_id);
         _sendMailsToAllPeople(user_list, email_content);
         console.log(user_list);
     } catch (err) {
@@ -32,13 +36,57 @@ const _validateBulkSendRequest = (file, campaign_id) => {
 }
 
 const _compileMailContent = async (customer, campaign_id) => {
-    return 'email_body';
+    try {
+        let campaign_details = await _getCampaignDetail(campaign_id);
+        let product_details = await _getProductDetail(campaign_details.product_id);
+        let mail_content = _getMailContent(customer.name, product_details.name, campaign_id);
+        return mail_content;
+    } catch (err) { throw err }
+}
+
+const _getCampaignDetail = async (campaign_id) => {
+    try {
+        let campaign = await Campaign.findOne({ _id: campaign_id });
+        if (!campaign) throw { message: 'campaign not available' };
+        campaign = campaign.toJSON();
+        return campaign;
+    } catch (err) { throw err }
+}
+
+const _getProductDetail = async (product_id) => {
+    try {
+        let product = await Product.findOne({ _id: product_id });
+        if (!product) throw { message: 'product not available' };
+        product = product.toJSON();
+        return product;
+    } catch (err) { throw err }
+}
+
+const _getMailContent = (customer_name, product_name, campaign_id) => {
+    try {
+        let email_body = `
+        Hi $$NAME$$,
+        Hope you are doing, ${customer_name} want's to hear from you 
+        regarding ${product_name} and your experience it.
+        Your feedback is incredibly valuable.
+        Please take 2 min time to fill this feedback form by clicking hear local_host/${campaign_id}.
+        `
+        return email_body;
+    } catch (err) { throw err }
 }
 
 const _sendMailsToAllPeople = async (user_list, email_content) => {
     try {
         for (let i = 0; user_list.length; i++) {
-            //send email
+            let user = user_list[i];
+            if (user.email) {
+                try {
+                    email_content = user.name ? email_content.replace('$$NAME$$', user.name) : email_content.replace('$$NAME$$', '');
+                    await sendEmail('We value your Feedback', email_content, user.email);
+                } catch (err) {
+                    console.log(`Error sending Email to ${user.email} failed because of Error: ${err}`);
+                }
+            }
         }
     } catch (err) {
         console.log("Error sending Emails:", err)

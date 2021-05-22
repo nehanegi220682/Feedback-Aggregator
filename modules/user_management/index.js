@@ -12,7 +12,7 @@ protected_router.post('/send_bulk_Emails', upload.single('csv'), async (req, res
     try {
         let { campaign_id } = req.body;
         await uploadUsers(req.file, req.customer, campaign_id);
-        return res.send('Uploaded');
+        return res.send('Email will be delivered to all with a valid email');
     } catch (err) {
         handelHTTPEndpointError(err, res);
     }
