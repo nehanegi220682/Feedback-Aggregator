@@ -8,9 +8,6 @@ const Campaign = require('../../lib/database/models/campaign');
 const { APP_ERROR_CODES } = require('../../universal_constants');
 const email_template = require('../../email_templates/reachout_email');
 
-
-
-
 const triggerBulkEmails = async (file, customer, campaign_id) => {
     try {
         _validateBulkSendRequest(file, campaign_id);
