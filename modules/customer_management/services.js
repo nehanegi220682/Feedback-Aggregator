@@ -10,18 +10,24 @@ const createCustomer = async (customer) => {
         await _validateCustomer(customer);
         let _serializedCustomer = _serializeCustomer(customer);
         await saveCustomer(_serializedCustomer);
-    } catch (err) { throw err }
+    } catch (err) {
+        if (err.message) err.code = APP_ERROR_CODES.INFORMATIVE_ERROR;
+        throw err
+    }
 }
 
 const getCustomerDetails = async (customer_id) => {
     try {
         let customer = await Customer.findOne({ _id: customer_id });
-        if (!customer) throw { message: 'Customers not found' };
+        if (!customer) throw { message: 'Customer not found' };
         customer = customer.toJSON();
         delete customer.password;
         delete customer.salt;
         return customer;
-    } catch (err) { throw err }
+    } catch (err) {
+        if (err.message) err.code = APP_ERROR_CODES.INFORMATIVE_ERROR;
+        throw err
+    }
 }
 
 const _validateCustomer = async (customer) => {

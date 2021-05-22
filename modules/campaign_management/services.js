@@ -43,7 +43,10 @@ const getAllCampaign = async (customer_id) => {
             return campaign.toJSON();
         });
         return all_campaigns;
-    } catch (err) { throw err }
+    } catch (err) {
+        if (err.message) err.code = APP_ERROR_CODES.INFORMATIVE_ERROR;
+        throw err;
+    }
 }
 
 const deleteCampaign = async (campaign_id, customer_id) => {
