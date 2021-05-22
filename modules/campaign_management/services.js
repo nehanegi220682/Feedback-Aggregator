@@ -9,10 +9,12 @@ const { APP_ERROR_CODES } = require('../../universal_constants');
 const createCampaign = async (campaign, customer) => {
     try {
         await _validateCampaign(campaign);
-        let current_usage = await _checkUsageLimit(customer.id);
+        let current_usage = await _getUsageLimit(customer.id);
+        if (customer.campaign_limit_used >= customer.campaign_limit)
+            throw { message: 'Campaign Limit Exhausted, Buy more to continue using' };
         await _doesCampaignExists(campaign.name, customer.id);
         campaign = _serializeCampaign(campaign, customer);
-        await _saveCampaign(campaign);
+        await _saveCampaign(campaign, customer.id);
         await _updateUsageCount(current_usage, customer.id, 1);
     } catch (err) {
         if (err.message) err.code = APP_ERROR_CODES.INFORMATIVE_ERROR;
@@ -49,7 +51,7 @@ const deleteCampaign = async (campaign_id, customer_id) => {
         if (!campaign_id) throw { message: 'campaign_id is required in params' };
         await _isAuthorizedToEditCampaign(campaign_id, customer_id);
         await _deleteCampaign(campaign_id);
-        let current_usage = await _checkUsageLimit(customer_id);
+        let current_usage = await _getUsageLimit(customer_id);
         await _updateUsageCount(current_usage, customer_id, -1);
     } catch (err) {
         if (err.message) err.code = APP_ERROR_CODES.INFORMATIVE_ERROR;
@@ -161,19 +163,23 @@ const _serializeCampaign = (campaign, customer) => {
     } catch (err) { throw err }
 }
 
-const _saveCampaign = async (campaign) => {
+const _saveCampaign = async (campaign, customer_id) => {
     try {
         let new_campaign = new Campaign(campaign);
+        new_campaign.default_url = _getFeedbackFormURL(customer_id, new_campaign.id);
         await new_campaign.save();
     } catch (err) { throw err }
 }
 
-const _checkUsageLimit = async (customer_id) => {
+const _getFeedbackFormURL = (customer_id, campaign_id) => {
+    return `http://${process.env.FE_URL}/feedback?customer_id=${customer_id}&campaign_id=${campaign_id}`;
+}
+
+
+const _getUsageLimit = async (customer_id) => {
     try {
         let customer = await Customer.findById({ _id: customer_id });
         if (!customer) throw { message: 'Customer not available' };
-        if (customer.campaign_limit_used >= customer.campaign_limit)
-            throw { message: 'Campaign Limit Exhausted, Buy more to continue using' };
         return customer.campaign_limit_used;
     } catch (err) { throw err }
 }
