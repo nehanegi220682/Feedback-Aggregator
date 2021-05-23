@@ -1,6 +1,7 @@
 `use strict`;
 
 const Product = require('../../lib/database/models/product');
+const Campaign = require('../../lib/database/models/campaign');
 const { APP_ERROR_CODES } = require('../../universal_constants');
 
 const createProduct = async (product, customer) => {
@@ -33,11 +34,19 @@ const deleteProduct = async (product_id, customer_id) => {
     try {
         if (!product_id) throw { message: 'product is required in body' };
         await _isAuthorizedToDeleteProduct(product_id, customer_id);
+        await _productSafeToDelete(product_id);
         await _deleteProduct(product_id);
     } catch (err) {
         if (err.message) err.code = APP_ERROR_CODES.INFORMATIVE_ERROR;
         throw err
     }
+}
+
+const _productSafeToDelete = async (product_id) => {
+    try {
+        let campaigns = await Campaign.find({ product_id: product_id });
+        if (campaigns && campaigns.length) throw { message: 'All Campaigns containing the product should be deleted for the campaign to be deleted' };
+    } catch (err) { throw err }
 }
 
 const _doesProductExists = async (product_name, customer_id) => {
