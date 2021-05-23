@@ -53,6 +53,7 @@ const deleteCampaign = async (campaign_id, customer_id) => {
     try {
         if (!campaign_id) throw { message: 'campaign_id is required in params' };
         await _isAuthorizedToEditCampaign(campaign_id, customer_id);
+        await _campaignSafeToDelete(campaign_id);
         await _deleteCampaign(campaign_id);
         let current_usage = await _getUsageLimit(customer_id);
         await _updateUsageCount(current_usage, customer_id, -1);
@@ -60,6 +61,13 @@ const deleteCampaign = async (campaign_id, customer_id) => {
         if (err.message) err.code = APP_ERROR_CODES.INFORMATIVE_ERROR;
         throw err
     }
+}
+
+const _campaignSafeToDelete = async (campaign_id) => {
+    try {
+        let questions = await Question.find({ campaign_id: campaign_id });
+        if (questions && questions.length) throw { message: 'All questions in campaign need to be deleted first' };
+    } catch (err) { throw err }
 }
 
 const addQuestions = async (to_add, customer_id) => {
