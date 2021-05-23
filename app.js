@@ -12,7 +12,7 @@ const { isAuthenticatedRequest } = require('./modules/authentication/services');
 
 app.listen(APP_PORT, () => console.log(`Server Running at http://localhost:${APP_PORT}`));
 
-app.use(cors());
+app.use(cors({ origin: true, credentials: true })); 
 app.use(express.json());
 app.use(cookieParser(SECRET));
 app.use(express.urlencoded({ extended: true }));
