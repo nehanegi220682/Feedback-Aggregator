@@ -2,14 +2,14 @@
 
 const express = require('express');
 const router_unprotected = express.Router();
-const { getSurveyDetails } = require('./services');
+const { generateForm } = require('./services');
 const { handelHTTPEndpointError } = require('../../lib/error_handling');
 
-router_unprotected.get('/:campaign_id', async (req, res) => {
+router_unprotected.get('/load_form', async (req, res) => {
     try {
-        let { campaign_id } = req.params;
-        let response = await getSurveyDetails(campaign_id);
-        return res.json(response);
+        let { campaign_id, customer_id, user_id } = req.query;
+        let response = await generateForm(campaign_id, customer_id, user_id);
+        return res.send(response);
     } catch (err) {
         handelHTTPEndpointError(err, res);
     }

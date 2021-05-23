@@ -18,9 +18,9 @@ app.use(cookieParser(SECRET));
 app.use(express.urlencoded({ extended: true }));
 
 //remove
-const html = require('./html_templates/feedback_form');
+const {MASTER_TEMPLATE} = require('./html_templates/feedback_form');
 //Unprotected Routes
-app.get(['/', '/ping'], (req, res) => res.send(html));
+app.get(['/', '/ping'], (req, res) => res.send(MASTER_TEMPLATE));
 app.use(['/customer'], require('./modules/customer_management/index').router_unprotected);
 app.use('/authentication', require('./modules/authentication/index').router_unprotected);
 app.use('/feedback', require('./modules/feedback_management/index').router_unprotected);

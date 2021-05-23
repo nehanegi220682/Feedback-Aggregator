@@ -1,10 +1,10 @@
 `use strict`;
 
-const TEMPLATE = `
+const MASTER_TEMPLATE = `
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Website Feedback Form</title>
+    <title>Feedback Form</title>
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,300italic,400italic,600' rel='stylesheet' type='text/css'>
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet">
     <style>
@@ -65,14 +65,11 @@ const TEMPLATE = `
       outline: none;
       border: 1px solid #1c87c9;
       }
-      table {
-      width: 100%;
-      }
       textarea {
       width: calc(100% - 6px);
       }
       .question {
-      padding: 15px 0 5px;
+      padding: 20px 0 5px;
       color: #095484;
       }
       .question-answer label {
@@ -110,18 +107,29 @@ const TEMPLATE = `
   </head>
   <body>
     <div class="testbox">
-      <form action="http://localhost:3000/protected/user/upload_user_list" method="POST">
-        <h1>Website Feedback Form</h1>
-        <p class="question">Is this the first time you have visited the website?</p>
-        <div class="question-answer">
-          <label><input type="radio" value="none" name="visited" /> yes</label>
-          <label><input type="radio" value="none" name="visited" /> no</label>
-        </div>
+      <form action="$$collect_answers_link$$" method="POST">
+        <h1>$$survey_head$$</</h1>
+        <br><br>
+        $$questions$$
         <div class="btn-block">
-          <button type="submit" href="/">Send</button>
+          <button type="submit" href="/">Send Feedback</button>
         </div>
+        <h2>$$disclaimer$$</</h2>
       </form>
     </div>
   </body>
-</html>`
-module.exports = TEMPLATE;
+</html>`;
+
+const QUESTION_TEMPLATE = `
+<p class="question">$$question$$</p>
+<div class="question-answer">
+  $$options$$
+</div>`;
+
+const OPTIONS_TEMPLATE = ` <label><input type="radio" value="no answer" name="$$question_id$$" /> $$option$$</label>`;
+
+module.exports = {
+  MASTER_TEMPLATE,
+  QUESTION_TEMPLATE,
+  OPTIONS_TEMPLATE
+};
