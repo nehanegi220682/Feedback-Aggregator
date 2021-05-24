@@ -4,11 +4,12 @@ const Campaign = require('../../lib/database/models/campaign');
 const Product = require('../../lib/database/models/product');
 const Customer = require('../../lib/database/models/customer');
 const Question = require('../../lib/database/models/question');
+const Answer = require('../../lib/database/models/answer');
 const { APP_ERROR_CODES } = require('../../universal_constants');
 const { MASTER_TEMPLATE, QUESTION_TEMPLATE, OPTIONS_TEMPLATE } = require('../../html_templates/feedback_form');
 
 
-const generateForm = async (campaign_id, customer_id, user_id) => {
+const generateForm = async (campaign_id, user_id) => {
     try {
         if (!campaign_id) throw { message: 'campaign_id is required' }
         let data_for_form = await _getRelevantData(campaign_id);
@@ -20,10 +21,24 @@ const generateForm = async (campaign_id, customer_id, user_id) => {
     }
 }
 
-const submitAnswers = async (campaign_id, customer_id, user_id) => {
+const submitAnswers = async (campaign_id, customer_id, user_id, answers) => {
     try {
-
-    } catch (err) { throw err }
+        for (let question in answers) {
+            let ans_obj = {
+                answer: answers[question],
+                question_id: question,
+                campaign_id: campaign_id,
+                customer_id: customer_id
+            }
+            if (user_id && user_id != 'undefined')
+                ans_obj.user_id = user_id;
+            let answer = new Answer(ans_obj);
+            await answer.save();
+        }
+    } catch (err) {
+        if (err.message) err.code = APP_ERROR_CODES.INFORMATIVE_ERROR;
+        throw err;
+    }
 }
 
 const _generateHTML = (data_for_form, user_id) => {
@@ -35,16 +50,16 @@ const _generateHTML = (data_for_form, user_id) => {
             let options_html = '';
             let temp_option_template = OPTIONS_TEMPLATE;
             if (question.positive_option) {
-                options_html = `${options_html} ${temp_option_template.replace('$$option$$', question.positive_option)}`;
-                options_html = options_html.replace('$$question_id$$',question.question_id);
+                options_html = `${options_html} ${temp_option_template.replace(/\$\$option\$\$/g, question.positive_option)}`;
+                options_html = options_html.replace('$$question_id$$', question.question_id);
             }
             if (question.neutral_option) {
-                options_html = `${options_html} ${temp_option_template.replace('$$option$$', question.neutral_option)}`;
-                options_html = options_html.replace('$$question_id$$',question.question_id);
+                options_html = `${options_html} ${temp_option_template.replace(/\$\$option\$\$/g, question.neutral_option)}`;
+                options_html = options_html.replace('$$question_id$$', question.question_id);
             }
             if (question.negative_option) {
-                options_html = `${options_html} ${temp_option_template.replace('$$option$$', question.negative_option)}`;
-                options_html = options_html.replace('$$question_id$$',question.question_id);
+                options_html = `${options_html} ${temp_option_template.replace(/\$\$option\$\$/g, question.negative_option)}`;
+                options_html = options_html.replace('$$question_id$$', question.question_id);
             }
             questions_html = `${questions_html} ${temp_questions_template.replace('$$question$$', question.question)}`;
             questions_html = questions_html.replace('$$options$$', options_html);

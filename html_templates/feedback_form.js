@@ -126,7 +126,7 @@ const QUESTION_TEMPLATE = `
   $$options$$
 </div>`;
 
-const OPTIONS_TEMPLATE = ` <label><input type="radio" value="no answer" name="$$question_id$$" /> $$option$$</label>`;
+const OPTIONS_TEMPLATE = ` <label><input type="radio" value="$$option$$" name="$$question_id$$" /> $$option$$</label>`;
 
 module.exports = {
   MASTER_TEMPLATE,
