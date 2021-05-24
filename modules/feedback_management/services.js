@@ -20,6 +20,12 @@ const generateForm = async (campaign_id, customer_id, user_id) => {
     }
 }
 
+const submitAnswers = async (campaign_id, customer_id, user_id) => {
+    try {
+
+    } catch (err) { throw err }
+}
+
 const _generateHTML = (data_for_form, user_id) => {
     try {
         let questions_html = '';
@@ -53,7 +59,7 @@ const _generateHTML = (data_for_form, user_id) => {
 }
 
 const _generateSubmitAnswersUrl = (customer_id, campaign_id, user_id) => {
-    return `http://${process.env.FE_URL}/feedback?customer_id=${customer_id}&campaign_id=${campaign_id}&user_id=${user_id}`;
+    return `http://${process.env.FE_URL}/feedback/submit_answers?customer_id=${customer_id}&campaign_id=${campaign_id}&user_id=${user_id}`;
 }
 
 
@@ -123,5 +129,6 @@ const _compileSurvey = (product, customer, all_questions, campaign_id) => {
 }
 
 module.exports = {
-    generateForm
+    generateForm,
+    submitAnswers
 }

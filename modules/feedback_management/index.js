@@ -15,6 +15,17 @@ router_unprotected.get('/load_form', async (req, res) => {
     }
 });
 
+
+router_unprotected.post('/submit_answers', async (req, res) => {
+    try {
+        let {campaign_id, customer_id, user_id} = req.query;
+        await submitAnswers(campaign_id, customer_id, user_id);
+        return res.send('Answer Recorded');
+    } catch (err) {
+        handelHTTPEndpointError(err, res);
+    }
+});
+
 module.exports = {
     router_unprotected
 };

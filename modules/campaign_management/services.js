@@ -146,7 +146,7 @@ const _validateToggleInput = (new_campaign_status) => {
             throw { message: 'campaign_id is a required field' };
         if (!status)
             throw { message: 'status id is a required field' };
-        if (!(status == 'ACTIVE' || status == 'PAUSED'))
+        if (!(status == 'ACTIVE' || status == 'IN_ACTIVE'))
             throw { message: 'Not a valid status' };
     } catch (err) {
         throw err;
