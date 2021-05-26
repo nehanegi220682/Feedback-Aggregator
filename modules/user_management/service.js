@@ -24,7 +24,7 @@ const triggerBulkEmails = async (file, customer, campaign_id) => {
 const _validateBulkSendRequest = (file, campaign_id) => {
     try {
         if (!(file && Object.keys(file).length))
-            throw { message: 'CSV file containing email and password should be sent' };
+            throw { message: 'CSV file containing email and name should be sent' };
         if (!campaign_id)
             throw { message: 'campaign_id is a required field' };
         if (!file.path)

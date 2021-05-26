@@ -32,4 +32,6 @@ app.use(['/protected/product'], require('./modules/product_management/index').pr
 app.use(['protected/customer'], require('./modules/customer_management/index').protected_router);
 app.use(['/protected/customer'], require('./modules/customer_management/index').protected_router);
 app.use(['/protected/campaign'], require('./modules/campaign_management/index').protected_router);
+app.use(['/protected/report'], require('./modules/report/index').protected_router);
+
 

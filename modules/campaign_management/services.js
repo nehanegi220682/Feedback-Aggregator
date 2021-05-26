@@ -183,7 +183,7 @@ const _saveCampaign = async (campaign, customer_id) => {
 }
 
 const _getFeedbackFormURL = (customer_id, campaign_id) => {
-    return `http://${process.env.FE_URL}/feedback?customer_id=${customer_id}&campaign_id=${campaign_id}`;
+    return `http://${process.env.FE_URL}/feedback/load_form/?customer_id=${customer_id}&campaign_id=${campaign_id}`;
 }
 
 
