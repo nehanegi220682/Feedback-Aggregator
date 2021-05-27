@@ -14,6 +14,18 @@ protected_router.get('/homepage', async (req, res) => {
     }
 });
 
+protected_router.get('/campaign_report/:campaign_id', async (req, res) => {
+    try {
+        let { campaign_id } = req.params;
+        if (!campaign_id) throw { message: 'campaign id required' }
+        let response = await report_services.getCampaignreport(campaign_id);
+        return res.json(response);
+    } catch (err) {
+        handelHTTPEndpointError(err, res);
+    }
+});
+
+
 module.exports = {
     protected_router
 };

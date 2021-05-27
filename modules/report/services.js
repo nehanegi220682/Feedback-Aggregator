@@ -1,9 +1,7 @@
 `use strict`;
 
-const { response } = require('express');
 const mongoose = require('mongoose');
 const Answer = require('../../lib/database/models/answer');
-const Campaign = require('../../lib/database/models/campaign');
 const Question = require('../../lib/database/models/question');
 const User = require('../../lib/database/models/user');
 const { getAllCampaign } = require('../campaign_management/services');
@@ -12,15 +10,26 @@ const getHompageDetails = async (customer_id) => {
     try {
         let response = {};
         response.campaign_list = await getAllCampaign(customer_id);
-        response.response_rate = await _getResponseRate(customer_id);
-        response.source_breakdown = await _getResponseSourceBreakdown(customer_id);
-        response.response_sentiment_breakdown = await _getResponseSentimentBreakDown(customer_id);
-        response.total_responses = response.source_breakdown[0].value + response.source_breakdown[1].value;
+        response.response_rate = await _getOverAllResponseRate(customer_id);
+        response.source_breakdown = await _getOverAllResponseSourceBreakdown(customer_id);
+        response.response_sentiment_breakdown = await _getOverAllResponseSentimentBreakDown(customer_id);
+        response.total_responses = (response.source_breakdown[0] ? response.source_breakdown[0].value : 0) + (response.source_breakdown[1] ? response.source_breakdown[1].value : 0);
         return response;
     } catch (err) { throw err }
 }
 
-const _getResponseRate = async (customer_id) => {
+const getCampaignreport = async (campaign_id) => {
+    try {
+        let response = {};
+        response.response_rate = await _getCampaignResponseRate(campaign_id);
+        response.source_breakdown = await _getCampaignResponseSourceBreakdown(campaign_id);
+        response.response_sentiment_breakdown = await _getCampaignResponseSentimentBreakDown(campaign_id);
+        response.total_responses = (response.source_breakdown[0] ? response.source_breakdown[0].value : 0) + (response.source_breakdown[1] ? response.source_breakdown[1].value : 0);
+        return response;
+    } catch (err) { throw err }
+}
+
+const _getOverAllResponseRate = async (customer_id) => {
     try {
         let [responeded_user_count] = await Answer.aggregate([
             { "$match": { "customer_id": mongoose.Types.ObjectId(customer_id), "user_id": { $ne: null } } },
@@ -41,31 +50,33 @@ const _getResponseRate = async (customer_id) => {
 
 
 
-const _getResponseSourceBreakdown = async (customer_id) => {
+const _getOverAllResponseSourceBreakdown = async (customer_id) => {
     try {
         let [responeded_by_user_count] = await Answer.aggregate([
             { "$match": { "customer_id": mongoose.Types.ObjectId(customer_id), "user_id": { $ne: null } } },
             { "$count": "user_id" }
         ]);
+        if (!responeded_by_user_count) return [];
         let graph_obj_1 = {
             "title": "By Email",
-            "value":  responeded_by_user_count.user_id,
+            "value": responeded_by_user_count.user_id,
             "color": "#eaf043"
         };
         let [responeded_anonumus_user_count] = await Answer.aggregate([
             { "$match": { "customer_id": mongoose.Types.ObjectId(customer_id), "user_id": null } },
             { "$count": "user_id" }
         ]);
+        if (!responeded_anonumus_user_count) return [];
         let graph_obj_2 = {
             "title": "Anonomusly",
-            "value":  responeded_anonumus_user_count.user_id,
+            "value": responeded_anonumus_user_count.user_id,
             "color": "#43f091"
         };
         return [graph_obj_1, graph_obj_2];
     } catch (err) { throw err }
 }
 
-const _getResponseSentimentBreakDown = async (customer_id) => {
+const _getOverAllResponseSentimentBreakDown = async (customer_id) => {
     try {
         let all_answers = await _getAllAnswers(customer_id);
         let all_questions = await _getAllQuestions(customer_id);
@@ -118,6 +129,7 @@ const _bucketBySentiment = (all_answers, guestion_sentiment_map) => {
             { title: 'neutral', value: 0, color: '#eaf043' },
             { title: 'positive', value: 0, color: '#37c14c' }
         ];
+        if (!all_answers.length) return [];
         all_answers.forEach(answer => {
             let sentiment = guestion_sentiment_map[`${answer.question_id}${answer.answer}`];
             switch (sentiment) {
@@ -133,6 +145,87 @@ const _bucketBySentiment = (all_answers, guestion_sentiment_map) => {
     } catch (err) { throw err }
 }
 
+const _getCampaignResponseRate = async (campaign_id) => {
+    try {
+        let [responeded_user_count] = await Answer.aggregate([
+            { "$match": { "campaign_id": mongoose.Types.ObjectId(campaign_id), "user_id": { $ne: null } } },
+            { "$group": { _id: "$user_id" } },
+            { "$count": "user_id" }
+        ]);
+        if (!responeded_user_count || !responeded_user_count.user_id) return 'No Data Avaliable';
+        responeded_user_count = responeded_user_count.user_id;
+        let [toal_users_in_campaign] = await User.aggregate([
+            { "$match": { "campaign_id": mongoose.Types.ObjectId(campaign_id) } },
+            { "$count": "user_id" }
+        ]);
+        if (!toal_users_in_campaign || !toal_users_in_campaign.user_id) return 'No Data Avaliable';
+        toal_users_in_campaign = toal_users_in_campaign.user_id;
+        return `${Math.round(responeded_user_count / toal_users_in_campaign * 100)}%`;
+    } catch (err) { throw err }
+}
+
+const _getCampaignResponseSourceBreakdown = async (campaign_id) => {
+    try {
+        let [responeded_by_user_count] = await Answer.aggregate([
+            { "$match": { "campaign_id": mongoose.Types.ObjectId(campaign_id), "user_id": { $ne: null } } },
+            { "$count": "user_id" }
+        ]);
+        if (!responeded_by_user_count) return [];
+        let graph_obj_1 = {
+            "title": "By Email",
+            "value": responeded_by_user_count.user_id,
+            "color": "#eaf043"
+        };
+        let [responeded_anonumus_user_count] = await Answer.aggregate([
+            { "$match": { "campaign_id": mongoose.Types.ObjectId(campaign_id), "user_id": null } },
+            { "$count": "user_id" }
+        ]);
+        if (!responeded_anonumus_user_count) return [];
+        let graph_obj_2 = {
+            "title": "Anonomusly",
+            "value": responeded_anonumus_user_count.user_id,
+            "color": "#43f091"
+        };
+        return [graph_obj_1, graph_obj_2];
+    } catch (err) { throw err }
+}
+
+const _getCampaignResponseSentimentBreakDown = async (campaign_id) => {
+    try {
+        let all_answers = await _getAllAnswersFromCampaign(campaign_id);
+        let all_questions = await _getAllQuestionsFromCampign(campaign_id);
+        let guestion_sentiment_map = _createQuestionSentimentMap(all_questions);
+        let bucketed_response = _bucketBySentiment(all_answers, guestion_sentiment_map);
+        return bucketed_response;
+    } catch (err) { throw err }
+}
+
+const _getAllAnswersFromCampaign = async (campaign_id) => {
+    try {
+        let all_answers = await Answer.find({ "campaign_id": campaign_id });
+        all_answers = all_answers.map(ans => {
+            ans = ans.toJSON();
+            ans.question_id = ans.question_id.toString('hex');
+            return ans;
+        });
+        return all_answers;
+    } catch (err) { throw err }
+}
+
+const _getAllQuestionsFromCampign = async (campaign_id) => {
+    try {
+        let all_questions = await Question.find({ "campaign_id": campaign_id });
+        all_questions = all_questions.map(que => {
+            que = que.toJSON();
+            que._id = que._id.toString('hex');
+            return que;
+        });
+        return all_questions;
+    } catch (err) { throw err }
+}
+
+
 module.exports = {
-    getHompageDetails
+    getHompageDetails,
+    getCampaignreport
 }
