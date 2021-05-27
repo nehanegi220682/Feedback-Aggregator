@@ -15,6 +15,7 @@ const getHompageDetails = async (customer_id) => {
         response.response_rate = await _getResponseRate(customer_id);
         response.source_breakdown = await _getResponseSourceBreakdown(customer_id);
         response.response_sentiment_breakdown = await _getResponseSentimentBreakDown(customer_id);
+        response.total_responses = response.source_breakdown[0].value + response.source_breakdown[1].value;
         return response;
     } catch (err) { throw err }
 }
